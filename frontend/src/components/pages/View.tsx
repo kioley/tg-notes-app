@@ -1,8 +1,8 @@
 import { useAppStore } from '../../store'
-import { useItem } from '../../hooks'
+import { useItem } from '../../api'
 
 function NoteView() {
-  const { selectedNote } = useAppStore()
+  const { selectedItem: selectedNote } = useAppStore()
   
   if (!selectedNote || !selectedNote.id) return null
   

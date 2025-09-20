@@ -1,21 +1,22 @@
 import EmptyState from '../ui/Empty'
-import NoteItem from '../items/Note'
+import Item from '../items/Item'
+import PageHeader from '../ui/PageHeader'
 import { useAppStore } from '../../store'
-import { useItems } from '../../hooks'
-import type { Item } from '../../types'
+import { useItems } from '../../api'
+import type { iItem } from '../../types'
 
 function ItemsList() {
-  const { selectNote, selectedFolder } = useAppStore()
+  const { selectedFolder } = useAppStore()
   
   if (!selectedFolder) return null
   
   const { data: items = [] } = useItems(selectedFolder.id)
   
   // Отображение item в зависимости от типа
-  const renderItem = (item: Item) => {
+  const renderItem = (item: iItem) => {
     switch (item.type) {
       case 'note':
-        return <NoteItem key={item.id} item={item} onClick={selectNote} />
+        return <Item key={item.id} item={item}  />
       
       default:
         // Пока остальные типы не обрабатываем
@@ -26,10 +27,10 @@ function ItemsList() {
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto p-4">
-        {/* Название папки */}
-        <h1 className="text-xl font-semibold text-gray-900 mb-6 pb-3 border-b border-gray-200">
-          📁 {selectedFolder.name}
-        </h1>
+        <PageHeader 
+          title={selectedFolder.name}
+          icon="📁"
+        />
         
         {/* Список items */}
         {items.length === 0 ? (

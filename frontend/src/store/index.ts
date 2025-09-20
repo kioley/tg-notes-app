@@ -1,8 +1,10 @@
 import { create } from "zustand";
-import type { Folder, Note, View, AppState } from "../types";
+import type { Folder, iItem, View, AppState } from "../types";
 
 export const useAppStore = create<AppState>((set, get) => {
   const actions = {
+    // ==================== NAVIGATION ACTIONS ====================
+    // Actions for opening/navigating to folders and notes
     selectFolder: (folder: Folder) => {
       set({
         selectedFolder: folder,
@@ -10,9 +12,9 @@ export const useAppStore = create<AppState>((set, get) => {
       });
     },
 
-    selectNote: (note: Note) => {
+    selectNote: (note: iItem) => {
       set({
-        selectedNote: note,
+        selectedItem: note,
         currentView: "view",
       });
     },
@@ -27,7 +29,7 @@ export const useAppStore = create<AppState>((set, get) => {
       const { selectedFolder } = get();
 
       set({
-        selectedNote: {
+        selectedItem: {
           id: 0, // Временный ID для новой заметки
           userId: 0, // Будет установлен на сервере
           title: "",
@@ -40,7 +42,7 @@ export const useAppStore = create<AppState>((set, get) => {
     },
 
     goBack: () => {
-      const { currentView, selectedNote } = get();
+      const { currentView, selectedItem: selectedNote } = get();
 
       if (currentView === "notes") {
         set({
@@ -50,7 +52,7 @@ export const useAppStore = create<AppState>((set, get) => {
       } else if (currentView === "view") {
         set({
           currentView: "notes",
-          selectedNote: null,
+          selectedItem: null,
         });
       } else if (currentView === "edit") {
         set({
@@ -59,16 +61,18 @@ export const useAppStore = create<AppState>((set, get) => {
       } else if (currentView === "createNote") {
         set({
           currentView: "notes",
-          selectedNote: null,
+          selectedItem: null,
         });
       }
     },
 
+    // ==================== UI ACTIONS ====================
+    // Actions for managing UI state and forms
     updateSelectedNote: (title: string, content: string) => {
       set((state) => ({
-        selectedNote: state.selectedNote
+        selectedItem: state.selectedItem
           ? {
-              ...state.selectedNote,
+              ...state.selectedItem,
               title,
               content,
             }
@@ -76,8 +80,8 @@ export const useAppStore = create<AppState>((set, get) => {
       }));
     },
 
-    saveNote: (savedNote: Note) => {
-      set({ currentView: "view", selectedNote: savedNote });
+    saveNote: (savedNote: iItem) => {
+      set({ currentView: "view", selectedItem: savedNote });
     },
 
     setShowCreateForm: (show: boolean) => {
@@ -88,16 +92,50 @@ export const useAppStore = create<AppState>((set, get) => {
       set({ newFolderName: name });
     },
 
+    // ==================== HIGHLIGHTING ACTIONS ====================
+    // Actions for multi-selection mode and bulk operations
+    enterHighlightMode: () => {
+      set({ isHighlightMode: true, highlightedIds: [] });
+    },
 
+    exitHighlightMode: () => {
+      set({ isHighlightMode: false, highlightedIds: [] });
+    },
+
+    toggleHighlight: (id: number) => {
+      set((state) => {
+        const isHighlighted = state.highlightedIds.includes(id);
+        const newHighlightedIds = isHighlighted
+          ? state.highlightedIds.filter((highlightedId) => highlightedId !== id)
+          : [...state.highlightedIds, id];
+
+        return { highlightedIds: newHighlightedIds };
+      });
+    },
+
+    highlightAll: () => {
+      // TODO: Implement based on current view
+      // Will need access to SWR data
+      console.log("highlightAll - needs implementation");
+    },
   };
 
   const store = {
-    // Initial state
+    // ==================== NAVIGATION STATE ====================
+    // Current navigation state and selected items
     currentView: "folders" as View,
     selectedFolder: null,
-    selectedNote: null,
+    selectedItem: null,
+
+    // ==================== UI STATE ====================
+    // Form states and UI flags
     showCreateForm: false,
-    newFolderName: '',
+    newFolderName: "",
+
+    // ==================== HIGHLIGHTING STATE ====================
+    // Multi-selection state for bulk operations
+    isHighlightMode: false,
+    highlightedIds: [] as number[],
 
     // Actions
     ...actions,

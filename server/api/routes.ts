@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
 import { telegramAuthMiddleware } from './telegram-auth.ts'
-import { getFoldersForUser, createFolderForUser, deleteFolderForUser } from '../db/folders.ts'
+import { getFoldersForUser, createFolderForUser, updateFolderForUser, deleteFolderForUser } from '../db/folders.ts'
 import { getItemsForFolder, getItemForUser, createItemForUser, updateItemForUser, deleteItemForUser } from '../db/items.ts'
 
 const api = new Hono()
@@ -22,6 +22,21 @@ api.post('/folders', async (c) => {
   const userId = c.get('userId') as number
   const { name } = await c.req.json()
   const folder = await createFolderForUser(userId, name)
+  return c.json(folder)
+})
+
+// Обновить папку
+api.put('/folders/:id', async (c) => {
+  const userId = c.get('userId') as number
+  const folderId = parseInt(c.req.param('id'))
+  const { name } = await c.req.json()
+  
+  const folder = await updateFolderForUser(folderId, userId, name)
+  
+  if (!folder) {
+    return c.json({ error: 'Folder not found' }, 404)
+  }
+  
   return c.json(folder)
 })
 
@@ -70,13 +85,13 @@ api.post('/items', async (c) => {
   return c.json(item)
 })
 
-// Обновить item
+// Обновить item (только title и content)
 api.put('/items/:id', async (c) => {
   const userId = c.get('userId') as number
   const itemId = parseInt(c.req.param('id'))
-  const { title, content, type } = await c.req.json()
+  const { title, content } = await c.req.json()
   
-  const item = await updateItemForUser(itemId, userId, title, content, type)
+  const item = await updateItemForUser(itemId, userId, title, content)
   
   if (!item) {
     return c.json({ error: 'Item not found' }, 404)

@@ -1,18 +1,22 @@
-import type { Item } from '../../types'
+import { useAppStore } from '../../store'
+import type { iItem } from '../../types'
+import SelectableItem from './SelectableItem'
 
 interface NoteItemProps {
-  item: Item  // Принимаем Item, но ожидаем что type='note'
-  onClick: (item: Item) => void
+  item: iItem  // Принимаем Item, но ожидаем что type='note'
+
 }
 
-function NoteItem({ item, onClick }: NoteItemProps) {
+function iItem({ item }: NoteItemProps) {
   // Показываем только если это заметка
   if (item.type !== 'note') return null
+  const { selectNote } = useAppStore()
   
   return (
-    <div 
-      onClick={() => onClick(item)}
-      className="p-4 mb-2 bg-white rounded-lg shadow-sm border cursor-pointer hover:bg-gray-50 flex items-start"
+    <SelectableItem 
+      id={item.id}
+      onClick={() => selectNote(item)}
+      className="flex items-start"
     >
       <div className="text-xl mr-3 mt-1">📝</div>
       <div className="flex-1">
@@ -24,8 +28,8 @@ function NoteItem({ item, onClick }: NoteItemProps) {
           {item.updatedAt ? new Date(item.updatedAt).toLocaleDateString() : ''}
         </p>
       </div>
-    </div>
+    </SelectableItem>
   )
 }
 
-export default NoteItem
+export default iItem

@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { useAppStore } from '../../store'
-import { useSaveItem } from '../../hooks'
+import { useSaveItem } from '../../api'
 import ActionButton from '../ui/Button'
 
 function EditButtons() {
-  const { goBack, selectedNote, currentView, saveNote: storeSaveNote } = useAppStore()
+  const { goBack, selectedItem: selectedNote, currentView, saveNote: storeSaveNote } = useAppStore()
   const { createItem, updateItem } = useSaveItem()
   const [isSaving, setIsSaving] = useState(false)
   

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useAppStore } from '../../store'
-import { useCreateFolder } from '../../hooks'
+import { useCreateFolder } from '../../api'
 import ActionButton from '../ui/Button'
 
 function CreateFolderButtons() {

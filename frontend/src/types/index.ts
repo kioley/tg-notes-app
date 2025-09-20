@@ -1,6 +1,18 @@
 // Импортируем типы из сервера (источник истины)
-export type { Folder, Item, ID, itemType } from '../../../server/types/index.ts'
+export type {
+  Folder,
+  iItem,
+  ID,
+  iItemType,
+} from "../../../server/types/index.ts";
 
 // Store types
-export type { View, AppState } from './store'
-export type { Button } from './store'
+export type { View, AppState } from "./store";
+export type { Button } from "./store";
+
+// UI types
+export interface MenuItem {
+  label: string;
+  onClick: () => void;
+  icon?: string;
+}

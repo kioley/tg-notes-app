@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useAppStore } from '../../store'
 
 function NoteEditor() {
-  const { selectedNote, updateSelectedNote } = useAppStore()
+  const { selectedItem: selectedNote, updateSelectedNote } = useAppStore()
   
   if (!selectedNote) return null
   

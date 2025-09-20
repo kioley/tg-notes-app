@@ -1,6 +1,6 @@
 // Алиас для легкой миграции на UUID
 export type ID = number; // Потом можно поменять на string
-export type itemType = "note"; // 'note', 'task', 'checklist', 'link', etc.
+export type iItemType = "note"; // 'note', 'task', 'checklist', 'link', etc.
 
 export interface Folder {
   id: ID;
@@ -12,11 +12,11 @@ export interface Folder {
   deletedAt?: string | null; // Мягкое удаление
 }
 
-export interface Item {
+export interface iItem {
   id: ID;
   userId: number; // Telegram user ID
   folderId: ID; // ID папки
-  type: itemType;
+  type: iItemType;
   title: string;
   content: string; // JSON строка или простой текст
   createdAt?: string;
