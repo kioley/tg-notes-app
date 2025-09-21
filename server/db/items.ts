@@ -129,22 +129,37 @@ export async function updateItemForUser(
   return await getItemForUser(itemId, userId);
 }
 
-// Удалить item (soft delete)
+// Удалить items (soft delete) - поддерживает массовое удаление
+export async function deleteItemsForUser(
+  itemIds: ID[],
+  userId: number
+): Promise<{ deletedCount: number, totalCount: number }> {
+  console.log(`📦 Deleting items [${itemIds.join(', ')}] for user ${userId}`);
+
+  if (itemIds.length === 0) {
+    return { deletedCount: 0, totalCount: 0 }
+  }
+  
+  // Создаем плейсхолдеры для IN запроса
+  const placeholders = itemIds.map(() => '?').join(', ')
+  
+  const result = db.query(`
+    UPDATE items 
+    SET deleted_at = CURRENT_TIMESTAMP 
+    WHERE id IN (${placeholders}) AND user_id = ? AND deleted_at IS NULL
+  `).run(...itemIds, userId)
+
+  return {
+    deletedCount: result.changes,
+    totalCount: itemIds.length
+  }
+}
+
+// Вспомогательная функция для удаления одного item (обратная совместимость)
 export async function deleteItemForUser(
   itemId: ID,
   userId: number
 ): Promise<boolean> {
-  console.log(`📦 Deleting item ${itemId} for user ${userId}`);
-
-  const result = db
-    .query(
-      `
-    UPDATE items 
-    SET deleted_at = CURRENT_TIMESTAMP 
-    WHERE id = ? AND user_id = ? AND deleted_at IS NULL
-  `
-    )
-    .run(itemId, userId);
-
-  return result.changes > 0;
+  const result = await deleteItemsForUser([itemId], userId)
+  return result.deletedCount > 0
 }

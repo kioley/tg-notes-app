@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { telegramAuthMiddleware } from './telegram-auth.ts'
-import { getFoldersForUser, createFolderForUser, updateFolderForUser, deleteFolderForUser } from '../db/folders.ts'
-import { getItemsForFolder, getItemForUser, createItemForUser, updateItemForUser, deleteItemForUser } from '../db/items.ts'
+import { getFoldersForUser, createFolderForUser, updateFolderForUser, deleteFolderForUser, deleteFoldersForUser } from '../db/folders.ts'
+import { getItemsForFolder, getItemForUser, createItemForUser, updateItemForUser, deleteItemForUser, deleteItemsForUser } from '../db/items.ts'
 
 const api = new Hono()
 
@@ -40,17 +40,31 @@ api.put('/folders/:id', async (c) => {
   return c.json(folder)
 })
 
-// Удалить папку
+// Удалить папку/папки (поддерживает массовое удаление)
 api.delete('/folders/:id', async (c) => {
   const userId = c.get('userId') as number
-  const folderId = parseInt(c.req.param('id'))
-  const success = await deleteFolderForUser(folderId, userId)
+  const param = c.req.param('id')
   
-  if (!success) {
-    return c.json({ error: 'Folder not found' }, 404)
+  // Поддерживаем как один ID, так и массив IDов через запятую
+  const folderIds = param.includes(',') 
+    ? param.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id))
+    : [parseInt(param)]
+    
+  if (folderIds.some(id => isNaN(id))) {
+    return c.json({ error: 'Invalid folder ID(s)' }, 400)
   }
   
-  return c.json({ message: 'Folder deleted successfully' })
+  const result = await deleteFoldersForUser(folderIds, userId)
+  
+  if (result.deletedCount === 0) {
+    return c.json({ error: 'No folders found or deleted' }, 404)
+  }
+  
+  return c.json({ 
+    message: `Deleted ${result.deletedCount} of ${result.totalCount} folders`,
+    deletedCount: result.deletedCount,
+    totalCount: result.totalCount
+  })
 })
 
 // ===== РОУТЫ ДЛЯ ITEMS =====
@@ -100,17 +114,31 @@ api.put('/items/:id', async (c) => {
   return c.json(item)
 })
 
-// Удалить item
+// Удалить item/items (поддерживает массовое удаление)
 api.delete('/items/:id', async (c) => {
   const userId = c.get('userId') as number
-  const itemId = parseInt(c.req.param('id'))
-  const success = await deleteItemForUser(itemId, userId)
+  const param = c.req.param('id')
   
-  if (!success) {
-    return c.json({ error: 'Item not found' }, 404)
+  // Поддерживаем как один ID, так и массив IDов через запятую
+  const itemIds = param.includes(',') 
+    ? param.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id))
+    : [parseInt(param)]
+    
+  if (itemIds.some(id => isNaN(id))) {
+    return c.json({ error: 'Invalid item ID(s)' }, 400)
   }
   
-  return c.json({ message: 'Item deleted successfully' })
+  const result = await deleteItemsForUser(itemIds, userId)
+  
+  if (result.deletedCount === 0) {
+    return c.json({ error: 'No items found or deleted' }, 404)
+  }
+  
+  return c.json({ 
+    message: `Deleted ${result.deletedCount} of ${result.totalCount} items`,
+    deletedCount: result.deletedCount,
+    totalCount: result.totalCount
+  })
 })
 
 export default api

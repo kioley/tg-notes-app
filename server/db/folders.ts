@@ -93,16 +93,41 @@ export async function updateFolderForUser(folderId: ID, userId: number, name: st
   }
 }
 
-// Удалить папку пользователя (soft delete)
-export async function deleteFolderForUser(folderId: ID, userId: number): Promise<boolean> {
-  console.log(`📁 Deleting folder ${folderId} for user ${userId}`)
+// Удалить папки пользователя (soft delete) - поддерживает массовое удаление
+export async function deleteFoldersForUser(folderIds: ID[], userId: number): Promise<{ deletedCount: number, totalCount: number }> {
+  console.log(`📁 Deleting folders [${folderIds.join(', ')}] for user ${userId}`)
   
-  const result = db.query(`
+  if (folderIds.length === 0) {
+    return { deletedCount: 0, totalCount: 0 }
+  }
+  
+  // Создаем плейсхолдеры для IN запроса
+  const placeholders = folderIds.map(() => '?').join(', ')
+  
+  // Каскадно удаляем сначала все заметки в этих папках
+  const itemsResult = db.query(`
+    UPDATE items 
+    SET deleted_at = CURRENT_TIMESTAMP 
+    WHERE folder_id IN (${placeholders}) AND user_id = ? AND deleted_at IS NULL
+  `).run(...folderIds, userId)
+  
+  console.log(`📦 Deleted ${itemsResult.changes} items in folders [${folderIds.join(', ')}]`)
+  
+  // Затем удаляем сами папки
+  const foldersResult = db.query(`
     UPDATE folders 
     SET deleted_at = CURRENT_TIMESTAMP 
-    WHERE id = ? AND user_id = ? AND deleted_at IS NULL
-  `).run(folderId, userId)
+    WHERE id IN (${placeholders}) AND user_id = ? AND deleted_at IS NULL
+  `).run(...folderIds, userId)
   
-  // Возвращаем true если строка была обновлена
-  return result.changes > 0
+  return {
+    deletedCount: foldersResult.changes,
+    totalCount: folderIds.length
+  }
+}
+
+// Вспомогательная функция для удаления одной папки (обратная совместимость)
+export async function deleteFolderForUser(folderId: ID, userId: number): Promise<boolean> {
+  const result = await deleteFoldersForUser([folderId], userId)
+  return result.deletedCount > 0
 }
