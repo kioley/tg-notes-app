@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { useAppStore } from '../../store'
+import { useAppStore } from '../../store/index.old'
 
 function NoteEditor() {
   const { selectedItem: selectedNote, updateSelectedNote } = useAppStore()

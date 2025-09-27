@@ -1,4 +1,4 @@
-import { useAppStore } from '../../store'
+import { useAppStore } from '../../store/index.old'
 import { useItem } from '../../api'
 
 function NoteView() {

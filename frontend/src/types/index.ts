@@ -7,8 +7,7 @@ export type {
 } from "../../../server/types/index.ts";
 
 // Store types
-export type { View, AppState } from "./store";
-export type { Button } from "./store";
+export type { iView, iDialog, ImmerStateCreator } from "./store";
 
 // UI types
 export interface MenuItem {

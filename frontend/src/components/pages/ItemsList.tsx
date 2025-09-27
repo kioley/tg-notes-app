@@ -1,49 +1,123 @@
-import EmptyState from '../ui/Empty'
-import Item from '../items/Item'
-import PageHeader from '../ui/PageHeader'
-import { useAppStore } from '../../store'
-import { useItems } from '../../api'
-import type { iItem } from '../../types'
+import { useState, useEffect } from "react";
+import { ArrowLeft } from "lucide-react";
+import NoteCard from "../cards/NoteCard";
+import SearchInput from "../ui/SearchInput";
+import FloatingActionButton from "../ui/FloatingActionButton";
+import { useAppStore, setCurrentView, loadItems } from "../../store";
+import type { iItem } from "../../types";
+import Masonry from "react-layout-masonry";
+import { ListHeader } from "./ui/ListHeader";
 
 function ItemsList() {
-  const { selectedFolder } = useAppStore()
-  
-  if (!selectedFolder) return null
-  
-  const { data: items = [] } = useItems(selectedFolder.id)
-  
-  // Отображение item в зависимости от типа
-  const renderItem = (item: iItem) => {
-    switch (item.type) {
-      case 'note':
-        return <Item key={item.id} item={item}  />
-      
-      default:
-        // Пока остальные типы не обрабатываем
-        return null
+  const {
+    isHighlightMode,
+    highlightedIds,
+    itemsByFolder,
+    selectedFolderId,
+    // folders,
+  } = useAppStore();
+
+  const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    if (selectedFolderId != null) {
+      loadItems(selectedFolderId);
     }
-  }
-  
+  }, [selectedFolderId]);
+
+  const items: iItem[] = itemsByFolder;
+  // const selectedFolder = folders.find((f) => f.id === selectedFolderId) || null;
+  const title = useAppStore(
+    (state) =>
+      state.folders.find((f) => f.id === selectedFolderId)?.name || "Заметки"
+  );
+  // Фильтрация заметок
+  const filteredItems = items.filter(
+    (item) =>
+      item.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.content?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const handleNoteClick = (note: iItem) => {
+    console.log("TODO: Открыть заметку", note);
+  };
+
+  const handleNoteDelete = (note: iItem) => {
+    console.log("TODO: Удалить заметку", note);
+  };
+
+  const handleCreateNote = () => {
+    console.log("TODO: Создать новую заметку");
+  };
+
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex-1 overflow-y-auto p-4">
-        <PageHeader 
-          title={selectedFolder.name}
-          icon="📁"
-        />
-        
-        {/* Список items */}
-        {items.length === 0 ? (
-          <EmptyState 
-            title="Пока нет элементов" 
-            subtitle="Создайте первый элемент" 
-          />
+    // <div className="min-h-screen bg-gray-50 p-4">
+    // <div className="w-full relative space-y-6 pb-20">
+    <>
+      {/* Шапка с кнопкой назад */}
+      <ListHeader title={title} showBackButton={true} />
+
+      {/* Поиск */}
+      <SearchInput
+        value={searchQuery}
+        onChange={setSearchQuery}
+        placeholder="Поиск заметок..."
+      />
+
+      {/* Заметки */}
+      <div className="space-y-3">
+        {filteredItems.length === 0 ? (
+          <div className="text-center py-12">
+            {searchQuery ? (
+              <div>
+                <p className="text-gray-500 mb-2">Заметки не найдены</p>
+                <p className="text-gray-400 text-sm">
+                  Попробуйте изменить поисковый запрос
+                </p>
+              </div>
+            ) : (
+              <div>
+                <p className="text-gray-500 mb-4">
+                  В этой папке пока нет заметок
+                </p>
+                <p className="text-gray-400 text-sm">
+                  Нажмите кнопку ниже, чтобы создать первую заметку
+                </p>
+              </div>
+            )}
+          </div>
         ) : (
-          items.map(item => renderItem(item))
+          <Masonry
+            columns={{ 10: 1, 400: 2, 1024: 3, 1280: 4 }}
+            gap={10}
+            columnProps={{
+              className: "masonry-column",
+              style: { display: "flex", flexDirection: "column" },
+            }}
+          >
+            {filteredItems.map((item) => (
+              <NoteCard key={item.id} note={item} />
+            ))}
+          </Masonry>
         )}
       </div>
-    </div>
-  )
+
+      {/* Плавающая кнопка */}
+      <FloatingActionButton onClick={handleCreateNote} />
+    </>
+    // </div>
+  );
 }
 
-export default ItemsList
+export default ItemsList;
+
+// onOpen={() => handleNoteClick(note)}
+// onDelete={() => handleNoteDelete(note)}
+// isHighlighted={
+//   isHighlightMode && highlightedIds.includes(note.id)
+// }
+// onToggleHighlight={
+//   isHighlightMode
+//     ? () => console.log("TODO: toggleHighlight")
+//     : undefined
+// }

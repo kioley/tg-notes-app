@@ -1,145 +1,99 @@
 import { create } from "zustand";
-import type { Folder, iItem, View, AppState } from "../types";
+import { immer } from "zustand/middleware/immer";
+import type { Folder, iView, iDialog, iItem } from "../types";
+import { foldersState } from "./slices/foldersSlice";
+import { uiState } from "./slices/uiSlice";
+import { createFolderState } from "./slices/createFolderSlice";
+import { navigationState } from "./slices/navigationSlice";
+import { dialogState } from "./slices/dialogSlice";
+import { itemsState } from "./slices/itemsSlice";
+import { messageDialogState } from "./slices/messageDialogSlice";
 
-export const useAppStore = create<AppState>((set, get) => {
-  const actions = {
-    // ==================== NAVIGATION ACTIONS ====================
-    // Actions for opening/navigating to folders and notes
-    selectFolder: (folder: Folder) => {
-      set({
-        selectedFolder: folder,
-        currentView: "notes",
-      });
-    },
+// Тип всего состояния
+type AppState = {
+  // Folders
+  folders: Folder[];
+  // Navigation
+  currentView: iView;
+  selectedFolderId: number | null;
+  selectedItemId: number | null;
+  // Dialog
+  currentDialog: iDialog | null;
+  // UI
+  isHighlightMode: boolean;
+  highlightedIds: number[];
+  // Create folder
+  newFolderName: string;
+  selectedColor: string;
+  isSaving: boolean;
+  // Items
+  itemsByFolder: iItem[];
+  currentItem: number | null;
+  loadedFolders: number[];
+  // Message dialog text
+  messageText: string | null;
+};
 
-    selectNote: (note: iItem) => {
-      set({
-        selectedItem: note,
-        currentView: "view",
-      });
-    },
+// Объединенное состояние
+const initialState: AppState = {
+  ...foldersState,
+  ...navigationState,
+  ...uiState,
+  ...createFolderState,
+  ...dialogState,
+  ...itemsState,
+  ...messageDialogState,
+};
 
-    editCurrentNote: () => {
-      set({
-        currentView: "edit",
-      });
-    },
+export const useAppStore = create<AppState>()(immer(() => initialState));
 
-    createNote: () => {
-      const { selectedFolder } = get();
+// Общие алиасы для всех слайсов
+export const set = useAppStore.setState;
+export const get = useAppStore.getState;
 
-      set({
-        selectedItem: {
-          id: 0, // Временный ID для новой заметки
-          userId: 0, // Будет установлен на сервере
-          title: "",
-          content: "",
-          type: "note", // По умолчанию создаем заметку
-          folderId: selectedFolder!.id,
-        },
-        currentView: "createNote",
-      });
-    },
+// Реэкспорт всех actions для удобства
+// Folders actions
+export {
+  setFolders,
+  addFolder,
+  removeFolder,
+  loadFolders,
+  deleteFolders,
+} from "./slices/foldersSlice";
 
-    goBack: () => {
-      const { currentView, selectedItem: selectedNote } = get();
+// Navigation actions
+export {
+  setCurrentView,
+  selectFolder,
+  selectNote,
+  goBack,
+  createNote,
+  editCurrentNote,
+} from "./slices/navigationSlice";
 
-      if (currentView === "notes") {
-        set({
-          currentView: "folders",
-          selectedFolder: null,
-        });
-      } else if (currentView === "view") {
-        set({
-          currentView: "notes",
-          selectedItem: null,
-        });
-      } else if (currentView === "edit") {
-        set({
-          currentView: "view",
-        });
-      } else if (currentView === "createNote") {
-        set({
-          currentView: "notes",
-          selectedItem: null,
-        });
-      }
-    },
+// UI actions
+export {
+  enterHighlightMode,
+  exitHighlightMode,
+  toggleHighlight,
+  highlightAll,
+  highlightAllFolders,
+} from "./slices/uiSlice";
 
-    // ==================== UI ACTIONS ====================
-    // Actions for managing UI state and forms
-    updateSelectedNote: (title: string, content: string) => {
-      set((state) => ({
-        selectedItem: state.selectedItem
-          ? {
-              ...state.selectedItem,
-              title,
-              content,
-            }
-          : null,
-      }));
-    },
+// Create folder actions
+export {
+  setNewFolderName,
+  setSelectedColor,
+  createFolder,
+  openCreateFolderDialog,
+  closeCreateFolderDialog,
+} from "./slices/createFolderSlice";
 
-    saveNote: (savedNote: iItem) => {
-      set({ currentView: "view", selectedItem: savedNote });
-    },
+// Items actions
+export { loadItems } from "./slices/itemsSlice";
 
-    setShowCreateForm: (show: boolean) => {
-      set({ showCreateForm: show });
-    },
-
-    setNewFolderName: (name: string) => {
-      set({ newFolderName: name });
-    },
-
-    // ==================== HIGHLIGHTING ACTIONS ====================
-    // Actions for multi-selection mode and bulk operations
-    enterHighlightMode: () => {
-      set({ isHighlightMode: true, highlightedIds: [] });
-    },
-
-    exitHighlightMode: () => {
-      set({ isHighlightMode: false, highlightedIds: [] });
-    },
-
-    toggleHighlight: (id: number) => {
-      set((state) => {
-        const isHighlighted = state.highlightedIds.includes(id);
-        const newHighlightedIds = isHighlighted
-          ? state.highlightedIds.filter((highlightedId) => highlightedId !== id)
-          : [...state.highlightedIds, id];
-
-        return { highlightedIds: newHighlightedIds };
-      });
-    },
-
-    highlightAll: () => {
-      // TODO: Implement based on current view
-      // Will need access to SWR data
-      console.log("highlightAll - needs implementation");
-    },
-  };
-
-  const store = {
-    // ==================== NAVIGATION STATE ====================
-    // Current navigation state and selected items
-    currentView: "folders" as View,
-    selectedFolder: null,
-    selectedItem: null,
-
-    // ==================== UI STATE ====================
-    // Form states and UI flags
-    showCreateForm: false,
-    newFolderName: "",
-
-    // ==================== HIGHLIGHTING STATE ====================
-    // Multi-selection state for bulk operations
-    isHighlightMode: false,
-    highlightedIds: [] as number[],
-
-    // Actions
-    ...actions,
-  };
-
-  return store;
-});
+// Message dialog actions
+export {
+  openMessageDialog,
+  closeMessageDialog,
+} from "./slices/messageDialogSlice";

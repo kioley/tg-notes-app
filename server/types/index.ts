@@ -7,6 +7,8 @@ export interface Folder {
   userId: number; // Telegram user ID
   name: string;
   notesCount: number;
+  color: string;
+  icon: string;
   createdAt?: string;
   updatedAt?: string;
   deletedAt?: string | null; // Мягкое удаление
@@ -19,7 +21,17 @@ export interface iItem {
   type: iItemType;
   title: string;
   content: string; // JSON строка или простой текст
-  createdAt?: string;
-  updatedAt?: string;
-  deletedAt?: string | null; // Мягкое удаление
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null; // Мягкое удаление
 }
+
+// export type iUser = {
+//   id: number;
+//   storages: iStorage[];
+// };
+
+// export type iStorage = {
+//   name: string;
+//   folders: Folder[];
+// };

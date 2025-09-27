@@ -2,10 +2,31 @@
 @tailwind components;
 @tailwind utilities;
 
+/* CSS переменные для тёмной темы (по умолчанию) */
+.theme-light  {
+  --color-bg: #000000;
+  --color-text: #ffffff;
+  --color-primary: #666666;
+  --color-secondary: #333333;
+}
+
+/* Светлая тема */
+:root {
+  --color-bg: #ffffff;
+  --color-text: #000000;
+  --color-primary: #cccccc;
+  --color-secondary: #999999;
+}
+
+html {
+  /* Резервируем место под скроллбар всегда, чтобы не было скачков при модалке */
+  scrollbar-gutter: stable;
+}
+
 body {
   margin: 0;
   padding: 0;
-  background: var(--tg-theme-bg-color, #ffffff);
-  color: var(--tg-theme-text-color, #000000);
+  background: var(--color-bg);
+  color: var(--color-text);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
