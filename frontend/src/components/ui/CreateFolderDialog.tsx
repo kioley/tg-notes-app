@@ -1,7 +1,7 @@
 import {
   useAppStore,
   setNewFolderName,
-  createFolder,
+  saveFolder,
   closeCreateFolderDialog,
 } from "../../store";
 import ActionButton from "./ActionButton";
@@ -9,13 +9,16 @@ import ColorPicker from "./ColorPicker";
 import BaseDialog from "./BaseDialog";
 
 function CreateFolderDialog() {
-  const { newFolderName, isSaving } = useAppStore();
+  const { newFolderName, isSaving, currentDialog } = useAppStore();
+  const isEditing = currentDialog === "editFolder";
 
   return (
     <BaseDialog onClose={closeCreateFolderDialog}>
       {/* Header */}
       <div className="px-6 py-4 border-b border-gray-200">
-        <h2 className="text-lg font-semibold text-gray-900">Новая папка</h2>
+        <h2 className="text-lg font-semibold text-gray-900">
+          {isEditing ? "Редактировать папку" : "Новая папка"}
+        </h2>
       </div>
 
       {/* Content */}
@@ -46,11 +49,11 @@ function CreateFolderDialog() {
           Отмена
         </ActionButton>
         <ActionButton
-          onClick={createFolder}
+          onClick={saveFolder}
           variant="primary"
           disabled={!newFolderName?.trim() || isSaving}
         >
-          {isSaving ? "Создание..." : "Создать"}
+          {isSaving ? "Сохранение..." : isEditing ? "Сохранить" : "Создать"}
         </ActionButton>
       </div>
     </BaseDialog>

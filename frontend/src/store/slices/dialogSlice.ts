@@ -16,6 +16,7 @@ const handleDialogKeyDown = (event: KeyboardEvent) => {
     const state = get();
     switch (state.currentDialog) {
       case "createFolder":
+      case "editFolder":
         closeCreateFolderDialog();
         break;
       case "errorDialog":

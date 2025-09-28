@@ -1,5 +1,6 @@
 import { FileText, Calendar } from "lucide-react";
 import type { iItem } from "../../types";
+import { selectItem } from "../../store/slices/navigationSlice";
 
 interface NoteCardProps {
   note: iItem;
@@ -42,7 +43,10 @@ export default function NoteCard({ note }: NoteCardProps) {
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-200 hover:border-blue-300 cursor-pointer group">
+    <div
+      className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-200 hover:border-blue-300 cursor-pointer group"
+      onClick={() => selectItem(note.id)}
+    >
       {/* Заголовок с иконкой */}
       <div className="flex items-center gap-3 mb-3">
         <div className="p-2 bg-blue-50 rounded-lg group-hover:bg-blue-100 transition-colors">

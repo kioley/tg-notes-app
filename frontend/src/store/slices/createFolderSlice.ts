@@ -1,6 +1,10 @@
-import { createFolderFromAPI } from "../../api/foldersApi";
+import { createFolderFromAPI, updateFolderFromAPI } from "../../api/foldersApi";
 import { set, get } from "../index";
-import { addFolder } from "./foldersSlice";
+import {
+  addFolder,
+  getCurrentFolder,
+  updateExistingFolder,
+} from "./foldersSlice";
 import { CARD_COLOR_NAMES } from "../../constants/colors";
 import { clearDomSettings, setDomSettings } from "./dialogSlice";
 import { openMessageDialog } from "./messageDialogSlice";
@@ -17,6 +21,19 @@ export function openCreateFolderDialog() {
     state.currentDialog = "createFolder";
   });
   setDomSettings();
+}
+
+export function openEditFolderDialog() {
+  const folder = getCurrentFolder();
+
+  if (folder) {
+    set((state) => {
+      state.newFolderName = folder.name;
+      state.selectedColor = folder.color;
+      state.currentDialog = "editFolder";
+    });
+    setDomSettings();
+  }
 }
 
 export function closeCreateFolderDialog() {
@@ -53,8 +70,31 @@ export const resetCreateFolderForm = () => {
   });
 };
 
-// Публичная функция - с проверкой isSaving
-export const createFolder = async () => {
+// Вспомогательная функция для создания новой папки
+const createNewFolder = async () => {
+  const result = await createFolderFromAPI(get().newFolderName.trim(), get().selectedColor);
+  addFolder(result);
+  return result;
+};
+
+// Вспомогательная функция для обновления текущей папки
+const updateCurrentFolder = async () => {
+  const currentFolder = getCurrentFolder();
+  if (!currentFolder) {
+    throw new Error("Нет текущей папки для обновления");
+  }
+
+  const result = await updateFolderFromAPI(
+    currentFolder.id,
+    get().newFolderName.trim(),
+    get().selectedColor
+  );
+  updateExistingFolder(result);
+  return result;
+};
+
+// Единая функция сохранения папки
+export const saveFolder = async () => {
   const state = get();
 
   // Валидация
@@ -69,18 +109,16 @@ export const createFolder = async () => {
   });
 
   try {
-    // API вызов
-    const newFolder = await createFolderFromAPI(
-      state.newFolderName.trim(),
-      state.selectedColor
-    );
-
-    // Добавляем новую папку в список
-    addFolder(newFolder);
+    // Выбираем логику в зависимости от типа диалога
+    if (state.currentDialog === "createFolder") {
+      await createNewFolder();
+    } else if (state.currentDialog === "editFolder") {
+      await updateCurrentFolder();
+    } else {
+      throw new Error("Неизвестный тип диалога для сохранения");
+    }
 
     // Очищаем форму и закрываем
-    // resetCreateFolderForm();
-    // closeDialog();
     set((state) => {
       state.isSaving = false;
     });
@@ -88,7 +126,7 @@ export const createFolder = async () => {
 
     return true;
   } catch (error) {
-    console.error("Ошибка создания папки:", error);
+    console.error("Ошибка сохранения папки:", error);
 
     // Сбрасываем isSaving и закрываем форму
     set((state) => {
@@ -97,7 +135,7 @@ export const createFolder = async () => {
     // Закрываем форму
     closeCreateFolderDialog();
     // Показать диалог ошибки
-    openMessageDialog("Не удалось создать папку. Попробуйте ещё раз.");
+    openMessageDialog("Не удалось сохранить папку. Попробуйте ещё раз.");
 
     return false;
   }

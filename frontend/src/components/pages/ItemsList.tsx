@@ -1,31 +1,34 @@
 import { useState, useEffect } from "react";
-import { ArrowLeft } from "lucide-react";
 import NoteCard from "../cards/NoteCard";
 import SearchInput from "../ui/SearchInput";
 import FloatingActionButton from "../ui/FloatingActionButton";
-import { useAppStore, setCurrentView, loadItems } from "../../store";
+import { useAppStore, loadItems } from "../../store";
 import type { iItem } from "../../types";
 import Masonry from "react-layout-masonry";
-import { ListHeader } from "./ui/ListHeader";
+import { Header } from "./ui/Header";
+import { getCurrentFolderItems } from "../../store/slices/itemsSlice";
+import { useShallow } from "zustand/shallow";
 
 function ItemsList() {
-  const {
-    isHighlightMode,
-    highlightedIds,
-    itemsByFolder,
-    selectedFolderId,
-    // folders,
-  } = useAppStore();
+  // const {
+  //   isHighlightMode,
+  //   highlightedIds,
+  //   itemsByFolder,
+  //   selectedFolderId,
+  //   // folders,
+  // } = useAppStore();
 
   const [searchQuery, setSearchQuery] = useState("");
 
-  useEffect(() => {
-    if (selectedFolderId != null) {
-      loadItems(selectedFolderId);
-    }
-  }, [selectedFolderId]);
+  const selectedFolderId = useAppStore((state) => state.currentFolderId);
+  const items = useAppStore(
+    useShallow((state) => getCurrentFolderItems(state))
+  );
 
-  const items: iItem[] = itemsByFolder;
+  useEffect(() => {
+    loadItems();
+  }, []);
+
   // const selectedFolder = folders.find((f) => f.id === selectedFolderId) || null;
   const title = useAppStore(
     (state) =>
@@ -54,8 +57,8 @@ function ItemsList() {
     // <div className="min-h-screen bg-gray-50 p-4">
     // <div className="w-full relative space-y-6 pb-20">
     <>
-      {/* Шапка с кнопкой назад */}
-      <ListHeader title={title} showBackButton={true} />
+      {/* Шапка с кнопкой назад и меню */}
+      <Header title={title} showBackButton={true} showMenuButton={true} />
 
       {/* Поиск */}
       <SearchInput

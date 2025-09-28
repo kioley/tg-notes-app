@@ -3,7 +3,7 @@ import {
   fetchFoldersFromAPI,
   removeFoldersFromAPI,
 } from "../../api/foldersApi";
-import { set } from "../index";
+import { set, get } from "../index";
 
 // Локальное состояние загрузки
 let foldersLoaded = false;
@@ -68,4 +68,18 @@ export const deleteFolders = async (folderIds: number[]) => {
     await loadFolders(); // Перезагружаем при ошибке
     throw error;
   }
+};
+
+export const getCurrentFolder = (): Folder | null => {
+  const state = get();
+  return state.folders.find((f) => f.id === state.currentFolderId) || null;
+};
+
+export const updateExistingFolder = (updatedFolder: Folder) => {
+  set((state) => {
+    const index = state.folders.findIndex((f) => f.id === updatedFolder.id);
+    if (index !== -1) {
+      state.folders[index] = updatedFolder;
+    }
+  });
 };

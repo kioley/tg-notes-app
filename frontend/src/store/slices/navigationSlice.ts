@@ -4,8 +4,8 @@ import { set, get } from "../index";
 // Состояние этого slice
 export const navigationState = {
   currentView: "folders" as iView,
-  selectedFolderId: null as number | null,
-  selectedItemId: null as number | null,
+  // currentFolderId: null as number | null,
+  currentItemId: null as number | null,
 };
 
 // Actions для этого slice
@@ -17,15 +17,15 @@ export const setCurrentView = (view: iView) => {
 
 export const selectFolder = (folderId: number) => {
   set((state) => {
-    state.selectedFolderId = folderId;
-    state.selectedItemId = null; // Сбрасываем выбранную заметку
+    state.currentFolderId = folderId;
+    state.currentItemId = null; // Сбрасываем выбранную заметку
     state.currentView = "notes"; // Переходим к списку заметок
   });
 };
 
-export const selectNote = (noteId: number) => {
+export const selectItem = (itemId: number) => {
   set((state) => {
-    state.selectedItemId = noteId;
+    state.currentItemId = itemId;
     state.currentView = "view"; // Переходим к просмотру заметки
   });
 };
@@ -36,15 +36,15 @@ export const goBack = () => {
   set((state) => {
     if (currentView === "notes") {
       state.currentView = "folders";
-      state.selectedFolderId = null;
+      state.currentFolderId = null;
     } else if (currentView === "view") {
       state.currentView = "notes";
-      state.selectedItemId = null;
+      state.currentItemId = null;
     } else if (currentView === "edit") {
       state.currentView = "view";
     } else if (currentView === "createNote") {
       state.currentView = "notes";
-      state.selectedItemId = null;
+      state.currentItemId = null;
     }
   });
 };

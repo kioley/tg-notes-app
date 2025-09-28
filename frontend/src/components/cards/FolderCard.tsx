@@ -1,24 +1,38 @@
 import { Folder as FolderIcon } from "lucide-react";
 import { useAppStore, selectFolder, toggleHighlight } from "../../store";
 
-const getNotesText = (count: number) => {
-  const lastDigit = count % 10;
+function getNotesText(count: number) {
   if (count === 0) return "Нет заметок";
-  if (lastDigit === 1) return "1 заметка";
-  if (lastDigit < 5 && lastDigit > 0) return `${count} заметки`;
-  return `${count} заметок`;
-};
+  // Получаем последнюю цифру числа
+  const lastDigit = count % 10;
+  // Получаем последние две цифры для чисел от 10 до 20
+  const lastTwoDigits = count % 100;
 
-const ALLOWED_COLORS = [
-  "blue",
-  "green",
-  "red",
-  "purple",
-  "yellow",
-  "indigo",
-  "pink",
-  "gray",
-];
+  // Если число заканчивается на 11, 12, 13, 14 - используем "заметок"
+  if (lastTwoDigits >= 11 && lastTwoDigits <= 14) {
+    return `${count} заметок`;
+  }
+
+  // Для остальных случаев смотрим на последнюю цифру
+  if (lastDigit === 1) {
+    return `${count} заметка`;
+  } else if (lastDigit >= 2 && lastDigit <= 4) {
+    return `${count} заметки`;
+  } else {
+    return `${count} заметок`;
+  }
+}
+
+// const ALLOWED_COLORS = [
+//   "blue",
+//   "green",
+//   "red",
+//   "purple",
+//   "yellow",
+//   "indigo",
+//   "pink",
+//   "gray",
+// ];
 
 // const normalizeColor = (color: string): string => {
 //   if (!color) return "blue";

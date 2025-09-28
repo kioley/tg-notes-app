@@ -1,7 +1,7 @@
 import { useAppStore } from "./store";
 import FoldersList from "./components/pages/FoldersList";
 import ItemsList from "./components/pages/ItemsList";
-// import NoteView from './components/pages/View';
+import NoteView from './components/pages/View';
 // import NoteEditor from './components/pages/Editor';
 import MessageDialog from "./components/ui/MessageDialog";
 
@@ -14,8 +14,8 @@ function App() {
         return <FoldersList />;
       case "notes":
         return <ItemsList />;
-      // case "view":
-      //   return <NoteView />;
+      case "view":
+        return <NoteView />;
       // case "edit":
       //   return <NoteEditor />;
       // case "createNote":
@@ -27,13 +27,7 @@ function App() {
 
   return (
     <div className="p-4 max-w-4xl mx-auto bg-white min-h-screen">
-      <div
-        className="w-full h-full relative flex gap-3 flex-col pb-20 overflow-y-auto"
-        // style={{
-        //   contain: "layout style paint",
-        //   overflow: "auto",
-        // }}
-      >
+      <div className="flex gap-3 flex-col pb-20">
         {renderView()}
         {currentDialog === "errorDialog" && (
           <MessageDialog message={messageText ?? ""} title="Ошибка" />

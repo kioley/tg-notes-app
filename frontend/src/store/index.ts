@@ -10,13 +10,13 @@ import { itemsState } from "./slices/itemsSlice";
 import { messageDialogState } from "./slices/messageDialogSlice";
 
 // Тип всего состояния
-type AppState = {
+export type AppState = {
   // Folders
   folders: Folder[];
   // Navigation
   currentView: iView;
-  selectedFolderId: number | null;
-  selectedItemId: number | null;
+  currentFolderId: number | null;
+  currentItemId: number | null;
   // Dialog
   currentDialog: iDialog | null;
   // UI
@@ -27,9 +27,9 @@ type AppState = {
   selectedColor: string;
   isSaving: boolean;
   // Items
-  itemsByFolder: iItem[];
+  items: iItem[];
   currentItem: number | null;
-  loadedFolders: number[];
+  // currentFolderItems: iItem[];
   // Message dialog text
   messageText: string | null;
 };
@@ -43,6 +43,13 @@ const initialState: AppState = {
   ...dialogState,
   ...itemsState,
   ...messageDialogState,
+  // get currentFolderItems() {
+  //   console.log("getter: ", get());
+
+  //   return get().items.filter(
+  //     (item) => item.folderId === get().currentFolderId
+  //   );
+  // },
 };
 
 export const useAppStore = create<AppState>()(immer(() => initialState));
@@ -53,21 +60,14 @@ export const get = useAppStore.getState;
 
 // Реэкспорт всех actions для удобства
 // Folders actions
-export {
-  setFolders,
-  addFolder,
-  removeFolder,
-  loadFolders,
-  deleteFolders,
-} from "./slices/foldersSlice";
+export { loadFolders } from "./slices/foldersSlice";
 
 // Navigation actions
 export {
   setCurrentView,
   selectFolder,
-  selectNote,
+  selectItem as selectNote,
   goBack,
-  createNote,
   editCurrentNote,
 } from "./slices/navigationSlice";
 
@@ -84,8 +84,9 @@ export {
 export {
   setNewFolderName,
   setSelectedColor,
-  createFolder,
+  saveFolder,
   openCreateFolderDialog,
+  openEditFolderDialog,
   closeCreateFolderDialog,
 } from "./slices/createFolderSlice";
 

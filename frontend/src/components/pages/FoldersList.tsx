@@ -4,7 +4,7 @@ import SearchInput from "../ui/SearchInput";
 import FloatingActionButton from "../ui/FloatingActionButton";
 import CreateFolderDialog from "../ui/CreateFolderDialog";
 import { useAppStore, loadFolders, openCreateFolderDialog } from "../../store";
-import { ListHeader } from "./ui/ListHeader";
+import { Header } from "./ui/Header";
 
 function FoldersList() {
   // Селекторы для оптимизации ререндеров
@@ -26,7 +26,7 @@ function FoldersList() {
     <>
       {/* <div> */}
       {/* Заголовок */}
-      <ListHeader title="Мои папки" />
+      <Header title="Мои папки" showMenuButton={true} />
 
       {/* Поиск */}
       <div className="mb-6">
